@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreeEngine - Selector de Fondos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>FreeEngine <span style="font-size: 1rem; color: #94a3b8;">v1.0</span></h1>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <!-- Control de Volumen Global -->
+            <div style="display: flex; align-items: center; gap: 5px; color: #cbd5e1; font-size: 0.9rem; font-family: sans-serif;">
+                <span>🔊</span>
+                <input type="range" id="globalVolume" min="0" max="1" step="0.05" value="1" title="Volumen general" style="cursor: pointer; width: 90px;">
+            </div>
+            <!-- Selector de Monitores -->
+            <select id="select-monitor" class="search-bar" style="width: 150px; cursor: pointer;">
+                <option value="0">Monitor Principal</option>
+                <option value="1">Monitor Secundario</option>
+            </select>
+            <!-- Buscador -->
+            <input type="text" id="buscador" class="search-bar" placeholder="Buscar fondo...">
+        </div>
+    </header>
+
+    <main id="contenedor-fondos" class="grid">
+        <p class="no-results">Cargando catálogo de fondos...</p>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

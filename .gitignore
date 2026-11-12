@@ -1,0 +1,5 @@
+# Carpetas de compilación
+build/
+bin/
+obj/
+_deps/
