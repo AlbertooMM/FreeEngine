@@ -114,7 +114,7 @@ void iniciarVerificacionActualizaciones(ICoreWebView2* webView)
 void CrearVentanaPanelControl()
 {
     if (g_hwnd != nullptr) {
-        // Si ya existe, solo la traemos al frente
+        // Si ya existe (estaba oculta), la mostramos y la traemos al frente
         ShowWindow(g_hwnd, SW_SHOW);
         SetForegroundWindow(g_hwnd);
         return;
@@ -132,7 +132,7 @@ void CrearVentanaPanelControl()
     wc.lpszClassName = L"FreeEngineWindowClass";
     RegisterClassExW(&wc);
 
-    // 2. Crear la ventana desde cero (libera memoria limpia al abrirse)
+    // 2. Crear la ventana desde cero
     g_hwnd = CreateWindowExW(
         0, L"FreeEngineWindowClass", L"FreeEngine - Panel de Control",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
@@ -357,7 +357,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     case WM_CLOSE:
     {
-        DestroyWindow(hwnd);
+        // En lugar de destruir la ventana al pulsar la "X", la ocultamos hacia el System Tray
+        ShowWindow(hwnd, SW_HIDE);
         return 0; 
     }
     case WM_DESTROY:
