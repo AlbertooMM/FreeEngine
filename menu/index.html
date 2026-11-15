@@ -11,12 +11,27 @@
 <body>
 
     <header>
+        <!-- Icono de descarga de actualización (Oculto por defecto) -->
+        <div id="btn-update-container" style="display: none; align-items: center; cursor: pointer; margin-left: auto;"
+            title="¡Nueva versión disponible!">
+            <div id="btn-update"
+                style="background: rgba(40, 167, 69, 0.2); border: 2px solid #28a745; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+                <!-- Icono SVG de descarga en color verde -->
+                <svg fill="#28a745" width="20px" height="20px" viewBox="0 0 24 24">
+                    <path d="M12 2v10m0 0l3-3m-3 3l-3-3m-7 8v4a2 2 0 002 2h14a2 2 0 002-2v-4" />
+                    <path stroke="#28a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        d="M5 18h14" />
+                </svg>
+            </div>
+        </div>
         <h1>FreeEngine <span style="font-size: 1rem; color: #94a3b8;">v1.0</span></h1>
         <div style="display: flex; gap: 15px; align-items: center;">
             <!-- Control de Volumen Global -->
-            <div style="display: flex; align-items: center; gap: 5px; color: #cbd5e1; font-size: 0.9rem; font-family: sans-serif;">
+            <div
+                style="display: flex; align-items: center; gap: 5px; color: #cbd5e1; font-size: 0.9rem; font-family: sans-serif;">
                 <span>🔊</span>
-                <input type="range" id="globalVolume" min="0" max="1" step="0.05" value="1" title="Volumen general" style="cursor: pointer; width: 90px;">
+                <input type="range" id="globalVolume" min="0" max="1" step="0.05" value="1" title="Volumen general"
+                    style="cursor: pointer; width: 90px;">
             </div>
             <!-- Selector de Monitores -->
             <select id="select-monitor" class="search-bar" style="width: 150px; cursor: pointer;">
@@ -33,6 +48,41 @@
     </main>
 
     <script src="app.js"></script>
+    <script>
+        // Declaración única global protegida contra redeclaraciones
+        if (typeof window.urlDescargaGlobal === 'undefined') {
+            window.urlDescargaGlobal = "";
+        }
+
+        // Función llamada automáticamente desde C++ al detectar una nueva versión
+        function mostrarIconoActualizacionVerde(urlDescarga) {
+            console.log("[JS] ¡Nueva versión detectada! Mostrando icono verde. URL:", urlDescarga);
+            window.urlDescargaGlobal = urlDescarga;
+
+            const container = document.getElementById('btn-update-container');
+            if (container) {
+                container.style.display = 'flex'; // Muestra el icono en la cabecera
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnUpdate = document.getElementById('btn-update');
+            if (btnUpdate) {
+                btnUpdate.addEventListener('click', () => {
+                    if (window.urlDescargaGlobal) {
+                        console.log("[JS] Iniciando actualización automática solicitada por el usuario...");
+                        if (window.chrome && window.chrome.webview) {
+                            // Envía la orden y la URL al backend de C++
+                            window.chrome.webview.postMessage(JSON.stringify({
+                                accion: "actualizar",
+                                url: window.urlDescargaGlobal
+                            }));
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>

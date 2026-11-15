@@ -1,15 +1,21 @@
 #include <iostream>
 #include <filesystem>
 #include <string>
+#include <thread>
 #include <windows.h>
+#include <WebView2.h>
+
 #include "Config.h"
-#include "SetupDialog.h" // <--- Sustituido por nuestra nueva ventana estilo instalador
+#include "SetupDialog.h"
 #include "WallpaperManager.h"
 #include "ActiveWallpaper.h"
 #include "WebViewManager.h"
 #include "WallpaperRenderer.h"
 
 namespace fs = std::filesystem;
+
+// Versión actual de la aplicación
+const std::string VERSION_ACTUAL = "v1.0.0";
 
 int main()
 {
@@ -25,10 +31,9 @@ int main()
         {
             std::cout << "\n[Aviso] La ruta guardada previamente ya no es válida." << std::endl;
         }
-        
+
         std::cout << "\n[Motor] Abriendo asistente de configuración nativo..." << std::endl;
-        
-        // Lanza la ventana nativa estilo instalador idéntica a tu boceto
+
         rutaUsuario = SetupDialog::mostrarVentanaConfiguracion();
 
         if (rutaUsuario.empty())
@@ -56,8 +61,7 @@ int main()
     char buffer[MAX_PATH];
     GetModuleFileNameA(nullptr, buffer, MAX_PATH);
     fs::path dirEjecutable = fs::path(buffer).parent_path();
-    
-    // Apunta directamente a build/Debug/menu/index.html
+
     fs::path rutaHtml = dirEjecutable / "menu" / "index.html";
 
     std::cout << "[Debug] Buscando index.html en: " << rutaHtml.string() << std::endl;

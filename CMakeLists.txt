@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(FreeEngine)
 
-
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
+
 # Usamos el estándar de C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,44 +17,61 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Microsoft.Web.WebView2)
 
-# Creamos el ejecutable de la aplicación con todos sus módulos
+# Creamos el ejecutable de la aplicación con todos sus módulos organizados en carpetas
 add_executable(FreeEngine
+    # Core general
     src/main.cpp 
-    src/Config.cpp 
-    src/Config.h 
-    src/WallpaperRenderer.cpp
-    src/WallpaperRenderer.h
-    src/WallpaperManager.cpp 
-    src/WallpaperManager.h
-    src/ActiveWallpaper.cpp
-    src/ActiveWallpaper.h
-    src/WebViewManager.cpp
-    src/WebViewManager.h
-    src/DesktopManager.cpp
-    src/DesktopManager.h
-    src/WebViewWindow.h
-    src/WebViewWindow.cpp
-    src/AudioManager.cpp
-    src/SetupDialog.h
-    src/SetupDialog.cpp
+    src/core/Config.cpp 
+    src/core/Config.h 
+    src/core/UpdaterManager.cpp
+    src/core/UpdaterManager.h
+
+    # UI / Ventanas / WebView2
+    src/ui/SetupDialog.cpp
+    src/ui/SetupDialog.h
+    src/ui/WebViewManager.cpp
+    src/ui/WebViewManager.h
+    src/ui/WebViewWindow.cpp
+    src/ui/WebViewWindow.h
+
+    # Wallpaper Core
+    src/wallpaper/core/WallpaperManager.cpp 
+    src/wallpaper/core/WallpaperManager.h
+    src/wallpaper/core/ActiveWallpaper.cpp
+    src/wallpaper/core/ActiveWallpaper.h
+
+    # Wallpaper Renderer / Desktop
+    src/wallpaper/renderer/WallpaperRenderer.cpp
+    src/wallpaper/renderer/WallpaperRenderer.h
+    src/wallpaper/renderer/DesktopManager.cpp
+    src/wallpaper/renderer/DesktopManager.h
+
+    # Wallpaper Media
+    src/wallpaper/media/AudioManager.cpp
+    src/wallpaper/media/AudioManager.h
+    src/wallpaper/renderer/types/VideoWallpaper.cpp
 )
 
-# Indicamos dónde están los archivos de cabecera (.h) incluyendo el WebView2 descargado
-# 3. ENLAZAR LAS RUTAS DE INCLUSIÓN
+# Indicamos dónde están los directorios base para que el compilador resuelva los #include
 target_include_directories(FreeEngine PRIVATE
     src
+    src/core
+    src/ui
+    src/wallpaper/core
+    src/wallpaper/renderer
+    src/wallpaper/media
     include
     "${CMAKE_CURRENT_BINARY_DIR}/_deps/microsoft.web.webview2-src/build/native/include"
 )
 
+# Copiar recursos del menú tras la compilación
 add_custom_command(TARGET FreeEngine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_SOURCE_DIR}/menu"
     "$<TARGET_FILE_DIR:FreeEngine>/menu"
 )
 
-# Enlazamos las librerías nativas de Windows necesarias para la ventana y WebView2
-# Librerías nativas de Windows + Loader estático de WebView2
+# Enlazamos las librerías nativas de Windows + Loader estático de WebView2
 target_link_libraries(FreeEngine PRIVATE
     shlwapi
     ole32

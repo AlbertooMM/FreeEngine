@@ -1,5 +1,34 @@
 let listaGlobalFondos = [];
 
+let urlDescargaGlobal = "";
+
+// Esta función es llamada automáticamente desde C++ cuando hay una nueva versión
+function mostrarIconoActualizacionVerde(urlDescarga) {
+    urlDescargaGlobal = urlDescarga;
+    const container = document.getElementById('btn-update-container');
+    if (container) {
+        container.style.display = 'flex'; // Muestra el contenedor del icono
+    }
+}
+
+// Evento al hacer clic en el icono verde
+document.addEventListener('DOMContentLoaded', () => {
+    const btnUpdate = document.getElementById('btn-update');
+    if (btnUpdate) {
+        btnUpdate.click = function() {
+            if (urlDescargaGlobal) {
+                // Abre el archivo de la release directamente en el navegador predeterminado del usuario
+                window.open(urlDescargaGlobal, '_blank');
+            }
+        };
+        // O si prefieres usar un listener estándar de clic:
+        btnUpdate.addEventListener('click', () => {
+            if (urlDescargaGlobal) {
+                window.open(urlDescargaGlobal, '_blank');
+            }
+        });
+    }
+});
 // Escuchar el evento DOMContentLoaded para asegurar que el DOM esté cargado
 document.addEventListener('DOMContentLoaded', () => {
     cargarCatálogo();
