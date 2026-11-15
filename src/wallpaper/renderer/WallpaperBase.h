@@ -17,5 +17,6 @@ public:
     virtual void reanudar() = 0;
 
     // Limpieza de recursos al cerrar o cambiar de fondo
+    virtual void ajustarVolumen(float volumen) = 0;
     virtual void liberar() = 0;
 };

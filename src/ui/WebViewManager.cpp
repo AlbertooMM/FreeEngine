@@ -3,6 +3,7 @@
 #include "WallpaperRenderer.h"
 #include "DesktopManager.h"
 #include "UpdaterManager.h"
+#include "AudioManager.h"
 #include <windows.h>
 #include <shellapi.h>
 #include <wrl.h>
@@ -194,6 +195,7 @@ void CrearVentanaPanelControl()
                                     }
                                     jsonStr.erase(std::remove(jsonStr.begin(), jsonStr.end(), '\\'), jsonStr.end());
 
+                                    // A. DETECTAR ACCIÓN DE ACTUALIZACIÓN AUTOMÁTICA
                                     if (jsonStr.find("\"accion\":\"actualizar\"") != std::string::npos) {
                                         size_t posUrl = jsonStr.find("\"url\":\"");
                                         if (posUrl != std::string::npos) {
@@ -207,6 +209,22 @@ void CrearVentanaPanelControl()
                                         return S_OK;
                                     }
 
+                                    // B. DETECTAR CAMBIO DE VOLUMEN
+                                    if (jsonStr.find("\"type\":\"set_volume\"") != std::string::npos) {
+                                        size_t posVol = jsonStr.find("\"volume\":");
+                                        if (posVol != std::string::npos) {
+                                            size_t inicio = posVol + 9;
+                                            size_t fin = jsonStr.find_first_of(",}", inicio);
+                                            if (fin != std::string::npos) {
+                                                std::string valStr = jsonStr.substr(inicio, fin - inicio);
+                                                float volumen = std::stof(valStr);
+                                                AudioManager::ajustarVolumen(volumen);
+                                            }
+                                        }
+                                        return S_OK;
+                                    }
+
+                                    // C. PARSEAR FONDO Y MONITOR
                                     std::string idFondo = "";
                                     int monitorIndex = 0;
 
@@ -244,6 +262,11 @@ void CrearVentanaPanelControl()
                                     args->get_IsSuccess(&isSuccess);
                                     if (isSuccess) {
                                         iniciarVerificacionActualizaciones(sender);
+
+                                        // Sincronizar el slider del panel con el volumen guardado en disco
+                                        float volActual = AudioManager::obtenerVolumen();
+                                        std::wstring jsVol = L"const slider = document.getElementById('globalVolume'); if(slider) { slider.value = " + std::to_wstring(volActual) + L"; }";
+                                        sender->ExecuteScript(jsVol.c_str(), nullptr);
                                     }
                                     return S_OK;
                                 })
@@ -264,7 +287,7 @@ void WebViewManager::iniciarVentana(const std::string &tituloVentana, const std:
     // Creamos el panel de control al arrancar
     CrearVentanaPanelControl();
 
-    // Bucle principal de mensajes de Windows (se mantiene vivo aunque la ventana se destruya)
+    // Bucle principal de mensajes de Windows
     MSG msg;
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -323,7 +346,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         int id = LOWORD(wParam);
         if (id == ID_MENU_ABRIR)
         {
-            // Recrear o mostrar la ventana del panel destruida previamente
             CrearVentanaPanelControl();
         }
         else if (id == ID_MENU_SALIR)
@@ -335,17 +357,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     case WM_CLOSE:
     {
-        // ¡DESTRUIR LA VENTANA PARA LIBERAR RAM Y CPU POR COMPLETO!
         DestroyWindow(hwnd);
         return 0; 
     }
     case WM_DESTROY:
     {
-        // Limpiamos los punteros de la interfaz al destruirla
         EliminarIconoTray(hwnd);
         g_webController = nullptr;
         g_webView = nullptr;
-        g_hwnd = nullptr; // Indicamos que ya no hay ventana activa
+        g_hwnd = nullptr;
         break;
     }
     case WM_KEYDOWN:

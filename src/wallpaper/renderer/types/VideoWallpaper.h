@@ -9,7 +9,7 @@ private:
     WebViewWindow m_webViewManager;
     std::string m_rutaVideo;
     bool m_inicializado = false;
-
+void ajustarVolumen(float volumen) override;
 public:
     bool inicializar(HWND hwndParent, const std::string& rutaArchivo) override;
     void actualizar() override;

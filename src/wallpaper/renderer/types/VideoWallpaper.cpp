@@ -5,7 +5,7 @@
 
 namespace fs = std::filesystem;
 
-// Compartidas con WallpaperRenderer y ImageWallpaper
+// Compartidas con WallpaperRenderer
 extern WebViewWindow g_sharedWallpaperWebView;
 extern bool g_sharedWebViewIniciado;
 
@@ -69,6 +69,17 @@ bool VideoWallpaper::inicializar(HWND hwndParent, const std::string& rutaArchivo
     }
 
     return true;
+}
+
+void VideoWallpaper::ajustarVolumen(float volumen)
+{
+    auto webView = g_sharedWallpaperWebView.obtenerWebView();
+    if (webView != nullptr)
+    {
+        std::wstring jsScript = L"const v = document.querySelector('video'); if(v) { v.volume = " + std::to_wstring(volumen) + L"; }";
+        webView->ExecuteScript(jsScript.c_str(), nullptr);
+        std::cout << "[VideoWallpaper] Volumen aplicado al vídeo del escritorio: " << (volumen * 100) << "%" << std::endl;
+    }
 }
 
 void VideoWallpaper::actualizar() {

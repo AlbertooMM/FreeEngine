@@ -18,6 +18,29 @@ static UINT_PTR g_timerPausaId = 101;
 WebViewWindow g_sharedWallpaperWebView;
 bool g_sharedWebViewIniciado = false;
 
+void WallpaperRenderer::actualizarVolumenActivo(float volumen)
+{
+    auto webView = g_sharedWallpaperWebView.obtenerWebView();
+    if (webView != nullptr)
+    {
+        // Script robusto que busca la etiqueta video (o cualquier elemento multimedia) y ajusta su volumen y estado de silencio
+        std::wstring jsScript = 
+            L"(function() {"
+            L"  const v = document.querySelector('video') || document.querySelector('audio');"
+            L"  if (v) {"
+            L"    v.volume = " + std::to_wstring(volumen) + L";"
+            L"    if (v.muted && " + std::to_wstring(volumen) + L" > 0) {"
+            L"      v.muted = false;"
+            L"    }"
+            L"    console.log('[WallpaperJS] Volumen ajustado a: ' + v.volume);"
+            L"  } else {"
+            L"    console.warn('[WallpaperJS] No se encontró elemento video en este fondo.');"
+            L"  }"
+            L"})();";
+
+        webView->ExecuteScript(jsScript.c_str(), nullptr);
+    }
+}
 // Comprueba si hay una ventana maximizada o a pantalla completa en primer plano
 bool hayVentanaMaximizadaOEnPantallaCompleta()
 {
